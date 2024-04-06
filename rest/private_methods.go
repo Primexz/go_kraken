@@ -2,6 +2,7 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -239,9 +240,22 @@ func (api *Kraken) GetOpenPositions(docalcs bool, txIDs ...string) (map[string]P
 	return response, nil
 }
 
+func mergeMaps[K comparable, V any](m1 map[K]V, m2 map[K]V) map[K]V {
+	merged := make(map[K]V)
+	for key, value := range m1 {
+		merged[key] = value
+	}
+	for key, value := range m2 {
+		merged[key] = value
+	}
+	return merged
+}
+
 // GetLedgersInfo - returns ledgers info
-func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, assets ...string) (LedgerInfoResponse, error) {
+func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, assets ...string) (map[string]Ledger, error) {
 	response := LedgerInfoResponse{}
+	var ledgers = make(map[string]Ledger)
+
 	data := url.Values{}
 	if ledgerType != "" {
 		data.Set("type", LedgerTypeAll)
@@ -257,9 +271,26 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 	}
 
 	if err := api.request("Ledgers", true, data, &response); err != nil {
-		return response, err
+		return nil, err
 	}
-	return response, nil
+
+	ledgers = response.Ledgers
+
+	i := 0
+	for len(ledgers) != response.Count {
+		i++
+
+		data.Set("ofs", strconv.Itoa(i))
+
+		fmt.Println("Resolving paginated ledgers")
+
+		if err := api.request("Ledgers", true, data, &response); err != nil {
+			return nil, err
+		}
+		ledgers = mergeMaps(ledgers, response.Ledgers)
+	}
+
+	return ledgers, nil
 }
 
 // QueryLedgers - get ledgers by ID

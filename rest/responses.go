@@ -679,6 +679,7 @@ type Position struct {
 
 // LedgerInfoResponse - response on ledger request
 type LedgerInfoResponse struct {
+	Count int            `json:"count"`
 	Ledgers map[string]Ledger `json:"ledger"`
 }
 
