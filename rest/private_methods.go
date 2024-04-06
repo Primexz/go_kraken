@@ -2,7 +2,6 @@ package rest
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -280,13 +279,12 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 	for len(ledgers) != response.Count {
 		i++
 
-		data.Set("ofs", strconv.Itoa(i))
-
-		fmt.Println("Resolving paginated ledgers")
+		data.Set("ofs", strconv.Itoa(i*50))
 
 		if err := api.request("Ledgers", true, data, &response); err != nil {
 			return nil, err
 		}
+
 		ledgers = mergeMaps(ledgers, response.Ledgers)
 	}
 
