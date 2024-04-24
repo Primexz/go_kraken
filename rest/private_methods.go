@@ -255,7 +255,7 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 		data.Set("end", strconv.FormatInt(end, 10))
 	}
 	if len(assets) > 0 {
-		data.Set("assets", strings.Join(assets, ","))
+		data.Set("asset", strings.Join(assets, ","))
 	}
 
 	if err := api.request("Ledgers", true, data, &response); err != nil {
