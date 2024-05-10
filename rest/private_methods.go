@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -269,7 +270,7 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 
 	i := 0
 	for len(ledgers) != response.Count {
-		i++
+		time.Sleep(500 * time.Millisecond)
 
 		data.Set("ofs", strconv.Itoa(i*50))
 
@@ -278,6 +279,8 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 		}
 
 		ledgers = mergeMaps(ledgers, response.Ledgers)
+
+		i++
 	}
 
 	return ledgers, nil
