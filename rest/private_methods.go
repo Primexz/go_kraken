@@ -246,8 +246,11 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 
 	data := url.Values{}
 	if ledgerType != "" {
+		data.Set("type", ledgerType)
+	} else {
 		data.Set("type", LedgerTypeAll)
 	}
+
 	if start != 0 {
 		data.Set("start", strconv.FormatInt(start, 10))
 	}
