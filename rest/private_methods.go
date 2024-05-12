@@ -270,7 +270,7 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 
 	i := 0
 	for len(ledgers) != response.Count {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(3 * time.Second)
 
 		data.Set("ofs", strconv.Itoa(i*50))
 
