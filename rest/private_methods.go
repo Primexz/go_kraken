@@ -241,7 +241,7 @@ func (api *Kraken) GetOpenPositions(docalcs bool, txIDs ...string) (map[string]P
 }
 
 // GetLedgersInfo - returns ledgers info
-func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, assets ...string) (map[string]Ledger, error) {
+func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, latestOnly bool, assets ...string) (map[string]Ledger, error) {
 	response := LedgerInfoResponse{}
 	var ledgers = make(map[string]Ledger)
 
@@ -267,6 +267,10 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, ass
 	}
 
 	ledgers = response.Ledgers
+
+	if latestOnly {
+		return ledgers, nil
+	}
 
 	i := 0
 	for len(ledgers) != response.Count {
