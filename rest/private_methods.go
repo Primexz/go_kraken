@@ -282,6 +282,13 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, lat
 			return nil, err
 		}
 
+		//try to detect duplicates
+		for key1 := range ledgers {
+			if _, ok := response.Ledgers[key1]; ok {
+				return ledgers, nil
+			}
+		}
+
 		ledgers = mergeMaps(ledgers, response.Ledgers)
 
 		i++
