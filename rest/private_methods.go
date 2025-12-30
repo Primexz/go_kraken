@@ -242,7 +242,6 @@ func (api *Kraken) GetOpenPositions(docalcs bool, txIDs ...string) (map[string]P
 
 // GetLedgersInfo - returns ledgers info
 func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, latestOnly bool, assets ...string) (map[string]Ledger, error) {
-	response := LedgerInfoResponse{}
 	var ledgers = make(map[string]Ledger)
 
 	data := url.Values{}
@@ -262,36 +261,34 @@ func (api *Kraken) GetLedgersInfo(ledgerType string, start int64, end int64, lat
 		data.Set("asset", strings.Join(assets, ","))
 	}
 
+	response := LedgerInfoResponse{}
 	if err := api.request("Ledgers", true, data, &response); err != nil {
 		return nil, err
 	}
 
 	ledgers = response.Ledgers
-
 	if latestOnly {
 		return ledgers, nil
 	}
 
-	i := 0
+	i := 1
 	for len(ledgers) != response.Count {
 		time.Sleep(3 * time.Second)
-
 		data.Set("ofs", strconv.Itoa(i*50))
 
-		if err := api.request("Ledgers", true, data, &response); err != nil {
+		res := LedgerInfoResponse{}
+		if err := api.request("Ledgers", true, data, &res); err != nil {
+			if err.Error() == "kraken return errors: [EAPI:Rate limit exceeded]" {
+				time.Sleep(15 * time.Second)
+				continue
+			}
+
 			return nil, err
 		}
 
-		//try to detect duplicates
-		for key1 := range ledgers {
-			if _, ok := response.Ledgers[key1]; ok {
-				return ledgers, nil
-			}
-		}
-
-		ledgers = mergeMaps(ledgers, response.Ledgers)
-
 		i++
+
+		ledgers = mergeMaps(ledgers, res.Ledgers)
 	}
 
 	return ledgers, nil
